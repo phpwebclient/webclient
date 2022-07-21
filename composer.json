@@ -1,0 +1,38 @@
+{
+  "name": "webclient/webclient",
+  "type": "library",
+  "description": "simple HTTP client without cURL dependency",
+  "keywords": ["http", "client", "http-client", "without-curl"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Ivan Dudarev",
+      "email": "ivan@ddrv.ru",
+      "homepage": "https://ddrv.ru"
+    }
+  ],
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "psr/http-client": "^1.0",
+    "psr/http-factory": "^1.0"
+  },
+  "require-dev": {
+    "nyholm/psr7": "^1.5",
+    "php-http/client-integration-tests": "^3.0",
+    "webclient/ext-redirect": "^1.0",
+    "squizlabs/php_codesniffer": "^3.7"
+  },
+  "autoload": {
+    "files": [
+      "autoload/register-wrappers.php"
+    ],
+    "psr-4": {
+      "Webclient\\Http\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Webclient\\Http\\": "tests/"
+    }
+  }
+}
