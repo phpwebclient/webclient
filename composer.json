@@ -34,5 +34,8 @@
     "psr-4": {
       "Tests\\Webclient\\Http\\": "tests/"
     }
+  },
+  "provide": {
+    "psr/http-client-implementation": "1.0"
   }
 }
