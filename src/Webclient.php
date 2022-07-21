@@ -109,7 +109,7 @@ final class Webclient implements ClientInterface
                 $address,
                 $errCode,
                 $errMessage,
-                null,
+                (int)$this->timeout,
                 STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT
             );
         } catch (Throwable $exception) {
