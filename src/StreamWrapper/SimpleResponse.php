@@ -10,14 +10,14 @@ final class SimpleResponse extends Wrapper
 {
     private int $length;
 
-    protected function get_options_key(): string
+    protected function getOptionsKey(): string
     {
-        return 'webclient-simple-response';
+        return 'webclilen';
     }
 
-    protected function check_options(array $options, string $key)
+    protected function checkOptions(array $options, string $key)
     {
-        parent::check_options($options, $key);
+        parent::checkOptions($options, $key);
         $length = $options[$key]['length'] ?? null;
         if (!is_int($length)) {
             throw new InvalidArgumentException(
@@ -27,7 +27,7 @@ final class SimpleResponse extends Wrapper
         $this->length = $length;
     }
 
-    protected function read_to(int $position, bool $return): string
+    protected function readTo(int $position, bool $return): string
     {
         fseek($this->response, $this->read);
         $chunk = 2048;

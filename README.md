@@ -28,9 +28,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 /** 
  * @var ResponseFactoryInterface $responseFactory
  * @var StreamFactoryInterface $streamFactory
- * @var float $timeout = 60
  */
-$http = new Webclient($responseFactory, $streamFactory, $timeout);
+$http = new Webclient($responseFactory, $streamFactory);
 
 /** @var RequestInterface $request */
 $response = $http->sendRequest($request);
@@ -49,4 +48,4 @@ $body = $response->getBody()->__toString();
 - [Adding cookies to request](https://packagist.org/packages/webclient/ext-cookie)
 - [Change protocol version](https://packagist.org/packages/webclient/ext-protocol-version)
 - [HTTP-Cache for your client](https://packagist.org/packages/webclient/ext-cache)
-
+- [Retry request on error](https://packagist.org/packages/webclient/ext-retry)

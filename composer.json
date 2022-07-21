@@ -23,9 +23,6 @@
     "squizlabs/php_codesniffer": "^3.7"
   },
   "autoload": {
-    "files": [
-      "autoload/register-wrappers.php"
-    ],
     "psr-4": {
       "Webclient\\Http\\": "src/"
     }

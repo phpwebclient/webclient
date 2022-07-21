@@ -8,13 +8,9 @@
     <arg name="colors"/>
 
     <!-- inherit rules from: -->
-    <rule ref="PSR12">
-        <exclude name="PSR12.Properties.ConstantVisibility.NotFound"/>
-        <exclude name="PSR12.Properties.ConstantVisibility.NotFound"/>
-    </rule>
+    <rule ref="PSR12"/>
 
     <!-- Paths to check -->
-    <file>src/Webclient.php</file>
-    <file>src/Exception</file>
+    <file>src</file>
     <file>tests</file>
 </ruleset>

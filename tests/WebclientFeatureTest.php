@@ -16,7 +16,7 @@ class WebclientFeatureTest extends HttpFeatureTest
     {
         $factory = new Psr17Factory();
         return new Client(
-            new Webclient($factory, $factory, 1)
+            new Webclient($factory, $factory)
         );
     }
 }

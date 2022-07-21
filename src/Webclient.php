@@ -15,6 +15,8 @@ use Webclient\Http\Exception\ConnectionError;
 use Webclient\Http\Exception\ConnectionTimedOut;
 use Webclient\Http\Exception\InvalidRequest;
 use Webclient\Http\Exception\SslConnectionError;
+use Webclient\Http\StreamWrapper\ChunkedResponse;
+use Webclient\Http\StreamWrapper\SimpleResponse;
 
 final class Webclient implements ClientInterface
 {
@@ -24,15 +26,11 @@ final class Webclient implements ClientInterface
 
     public function __construct(
         ResponseFactoryInterface $responseFactory,
-        StreamFactoryInterface $streamFactory,
-        ?float $timeout = null
+        StreamFactoryInterface $streamFactory
     ) {
         $this->responseFactory = $responseFactory;
         $this->streamFactory = $streamFactory;
-        if (is_null($timeout)) {
-            $timeout = (float)ini_get('default_socket_timeout');
-        }
-        $this->timeout = $timeout;
+        $this->timeout = (float)ini_get('default_socket_timeout');
     }
 
     public function sendRequest(RequestInterface $request): ResponseInterface
@@ -229,11 +227,9 @@ final class Webclient implements ClientInterface
         $encodings = $this->splitHeaderValues($headers['content-encoding']);
         foreach ($encodings as $encoding) {
             switch ($encoding) {
-                case 'gzip':
-                    stream_filter_append($stream, 'zlib.inflate', STREAM_FILTER_READ, ['window' => 16]);
-                    break;
+                case 'gzip': // no break
                 case 'deflate':
-                    stream_filter_append($stream, 'zlib.inflate', STREAM_FILTER_READ, ['window' => 15]);
+                    stream_filter_append($stream, 'zlib.inflate', STREAM_FILTER_READ, ['window' => 15 + 32]);
                     break;
             }
         }
@@ -249,8 +245,9 @@ final class Webclient implements ClientInterface
     private function wrapResponseStream(RequestInterface $request, array $headers, $source)
     {
         if (array_key_exists('content-length', $headers)) {
-            return fopen('webclient-simple-response://', 'rb+', false, stream_context_create([
-                'webclient-simple-response' => [
+            $this->registerWrapper('webclilen', SimpleResponse::class);
+            return fopen('webclilen://', 'rb+', false, stream_context_create([
+                'webclilen' => [
                     'source' => $source,
                     'length' => (int)$headers['content-length'][0],
                     'request' => $request,
@@ -260,8 +257,9 @@ final class Webclient implements ClientInterface
         if (array_key_exists('transfer-encoding', $headers)) {
             $encodings = $this->splitHeaderValues($headers['transfer-encoding']);
             if (in_array('chunked', $encodings)) {
-                return fopen('webclient-chunked-response://', 'rb+', false, stream_context_create([
-                    'webclient-chunked-response' => [
+                $this->registerWrapper('webclichn', ChunkedResponse::class);
+                return fopen('webclichn://', 'rb+', false, stream_context_create([
+                    'webclichn' => [
                         'source' => $source,
                         'request' => $request,
                     ],
@@ -274,5 +272,14 @@ final class Webclient implements ClientInterface
     private function splitHeaderValues(array $values): array
     {
         return array_filter(array_map('trim', explode(',', implode(',', $values))));
+    }
+
+    private function registerWrapper(string $protocol, string $wrapperClassName): void
+    {
+        $registered = in_array($protocol, stream_get_wrappers());
+        if ($registered) {
+            stream_wrapper_unregister($protocol);
+        }
+        stream_wrapper_register($protocol, $wrapperClassName);
     }
 }

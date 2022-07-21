@@ -25,11 +25,11 @@ abstract class Wrapper
 
     private RequestInterface $request;
 
-    abstract protected function read_to(int $position, bool $return): string;
+    abstract protected function readTo(int $position, bool $return): string;
 
-    abstract protected function get_options_key(): string;
+    abstract protected function getOptionsKey(): string;
 
-    public function stream_close()
+    public function streamClose()
     {
         if (is_resource($this->response)) {
             fclose($this->response);
@@ -39,7 +39,7 @@ abstract class Wrapper
         }
     }
 
-    public function stream_eof(): bool
+    public function streamEof(): bool
     {
         if (!$this->isReady) {
             return false;
@@ -47,29 +47,29 @@ abstract class Wrapper
         return $this->position >= $this->read;
     }
 
-    public function stream_flush(): bool
+    public function streamFlush(): bool
     {
         trigger_error('can not flush the resource');
         return false;
     }
 
-    public function stream_lock(int $operation): bool
+    public function streamLock(int $operation): bool
     {
         trigger_error('can not lock the resource');
         return false;
     }
 
-    public function stream_open(string $path, string $mode, int $options, ?string &$opened_path): bool
+    public function streamOpen(string $path, string $mode, int $options, ?string &$opened_path): bool
     {
         $options = stream_context_get_options($this->context);
-        $key = $this->get_options_key();
-        $this->check_options($options, $key);
+        $key = $this->getOptionsKey();
+        $this->checkOptions($options, $key);
         return is_resource($this->response);
     }
 
-    public function stream_read(int $count): string
+    public function streamRead(int $count): string
     {
-        if ($this->stream_eof()) {
+        if ($this->streamEof()) {
             return '';
         }
         if ($this->isReady) {
@@ -97,8 +97,8 @@ abstract class Wrapper
             return fread($this->response, $count);
         }
 
-        $this->check_timeout();
-        $data = $exists . $this->read_to($end, true);
+        $this->checkTimeout();
+        $data = $exists . $this->readTo($end, true);
         $len = strlen($data);
         $this->position += min($len, $count);
         if ($len > $count) {
@@ -108,7 +108,7 @@ abstract class Wrapper
         return $data;
     }
 
-    public function stream_seek(int $offset, int $whence = SEEK_SET): bool
+    public function streamSeek(int $offset, int $whence = SEEK_SET): bool
     {
         switch ($whence) {
             case SEEK_SET:
@@ -125,14 +125,14 @@ abstract class Wrapper
         }
 
         if ($position > $this->read) {
-            $this->check_timeout();
-            $this->read_to($position, false);
+            $this->checkTimeout();
+            $this->readTo($position, false);
         }
         $this->position = $position;
         return true;
     }
 
-    public function stream_set_option(int $option, int $arg1, int $arg2): bool
+    public function streamSetOption(int $option, int $arg1, int $arg2): bool
     {
         return false;
     }
@@ -140,33 +140,29 @@ abstract class Wrapper
     /**
      * @return array|false
      */
-    public function stream_stat()
+    public function streamStat()
     {
         return fstat($this->response);
     }
 
-    public function stream_tell(): int
+    public function streamTell(): int
     {
         return $this->position;
     }
 
-    public function stream_truncate(int $new_size): bool
+    public function streamTruncate(int $new_size): bool
     {
         trigger_error('resource is readonly');
         return false;
     }
 
-    public function stream_write(string $data): int
+    public function streamWrite(string $data): int
     {
         trigger_error('resource is readonly');
         return 0;
     }
 
-    public function __destruct()
-    {
-    }
-
-    private function check_timeout()
+    private function checkTimeout()
     {
         $metadata = stream_get_meta_data($this->source);
         $timedOut = $metadata['timed_out'] ?? false;
@@ -175,7 +171,7 @@ abstract class Wrapper
         }
     }
 
-    protected function check_options(array $options, string $key)
+    protected function checkOptions(array $options, string $key)
     {
         $source = $options[$key]['source'] ?? null;
         if (!is_resource($source)) {
@@ -193,5 +189,36 @@ abstract class Wrapper
         $this->source = $source;
         $this->request = $request;
         $this->response = fopen('php://temp', 'rw+');
+    }
+
+    public function __call(string $name, array $arguments)
+    {
+        switch ($name) {
+            case 'stream_close':
+                return call_user_func_array([$this, 'streamClose'], $arguments);
+            case 'stream_eof':
+                return call_user_func_array([$this, 'streamEof'], $arguments);
+            case 'stream_flush':
+                return call_user_func_array([$this, 'streamFlush'], $arguments);
+            case 'stream_lock':
+                return call_user_func_array([$this, 'streamLock'], $arguments);
+            case 'stream_open':
+                return call_user_func_array([$this, 'streamOpen'], $arguments);
+            case 'stream_read':
+                return call_user_func_array([$this, 'streamRead'], $arguments);
+            case 'stream_seek':
+                return call_user_func_array([$this, 'streamSeek'], $arguments);
+            case 'stream_set_option':
+                return call_user_func_array([$this, 'streamSetOption'], $arguments);
+            case 'stream_stat':
+                return call_user_func_array([$this, 'streamStat'], $arguments);
+            case 'stream_tell':
+                return call_user_func_array([$this, 'streamTell'], $arguments);
+            case 'stream_truncate':
+                return call_user_func_array([$this, 'streamTruncate'], $arguments);
+            case 'stream_write':
+                return call_user_func_array([$this, 'streamWrite'], $arguments);
+        }
+        return false;
     }
 }

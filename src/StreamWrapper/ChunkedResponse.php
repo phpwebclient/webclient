@@ -6,17 +6,17 @@ namespace Webclient\Http\StreamWrapper;
 
 final class ChunkedResponse extends Wrapper
 {
-    protected function get_options_key(): string
+    protected function getOptionsKey(): string
     {
-        return 'webclient-chunked-response';
+        return 'webclichn';
     }
 
-    protected function read_to(int $position, bool $return): string
+    protected function readTo(int $position, bool $return): string
     {
         $result = '';
         fseek($this->response, $this->read);
         while (!$this->isReady && $this->read < $position) {
-            $part = $this->read_chunk();
+            $part = $this->readChunk();
             $len = strlen($part);
             if ($return) {
                 $result .= $part;
@@ -32,7 +32,7 @@ final class ChunkedResponse extends Wrapper
         return $result;
     }
 
-    private function read_chunk(): string
+    private function readChunk(): string
     {
         $data = '  ';
         while (substr($data, -2) !== "\r\n") {
