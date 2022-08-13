@@ -188,7 +188,7 @@ abstract class Wrapper
 
         $this->source = $source;
         $this->request = $request;
-        $this->response = fopen('php://temp', 'rw+');
+        $this->response = fopen('php://temp', 'w+');
     }
 
     public function __call(string $name, array $arguments)
