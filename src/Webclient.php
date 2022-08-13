@@ -246,7 +246,7 @@ final class Webclient implements ClientInterface
     {
         if (array_key_exists('content-length', $headers)) {
             $this->registerWrapper('webclilen', SimpleResponse::class);
-            return fopen('webclilen://', 'rb+', false, stream_context_create([
+            return fopen('webclilen://', 'r+b', false, stream_context_create([
                 'webclilen' => [
                     'source' => $source,
                     'length' => (int)$headers['content-length'][0],
@@ -258,7 +258,7 @@ final class Webclient implements ClientInterface
             $encodings = $this->splitHeaderValues($headers['transfer-encoding']);
             if (in_array('chunked', $encodings)) {
                 $this->registerWrapper('webclichn', ChunkedResponse::class);
-                return fopen('webclichn://', 'rb+', false, stream_context_create([
+                return fopen('webclichn://', 'r+b', false, stream_context_create([
                     'webclichn' => [
                         'source' => $source,
                         'request' => $request,
