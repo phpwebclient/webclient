@@ -102,6 +102,7 @@ final class Webclient implements ClientInterface
         }
 
         $address = sprintf('tcp://%s:%d', $host, $port);
+        $httpStream = null;
         try {
             $httpStream = stream_socket_client(
                 $address,
@@ -118,6 +119,8 @@ final class Webclient implements ClientInterface
             if ($exception->getCode() === 110) {
                 throw new ConnectionTimedOut($request, $errMessage);
             }
+        }
+        if (!is_resource($httpStream)) {
             throw new ConnectionError($request, $errMessage, $errCode);
         }
 
